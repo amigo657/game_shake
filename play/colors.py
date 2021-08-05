@@ -6,3 +6,4 @@ class Color(tuple, Enum):
     ORANGE = (255, 191, 0)
     GREEN = (159, 226, 191)
     BLUE = (0, 0, 255)
+    RED = (255, 0, 0)
