@@ -1,7 +1,7 @@
 import pygame as pg
 from enum import IntEnum
 from random import randrange
-from .colors import Color
+from colors import Color
 
 
 class Direct(IntEnum):
@@ -20,10 +20,10 @@ class Snake():
         self._direct = Direct(randrange(0, 4))
         self._arena = arena
         init = {
-            Direct.UP: [(self._arena[0] // 2, self._arena[1] // 2 + i) for i in range(start_size)]
-            Direct.RIGHT: [(self._arena[0] // 2 - i, self._arena[1] // 2) for i in range(start_size)]
-            Direct.DOWN: [(self._arena[0] // 2, self._arena[1] // 2 - i) for i in range(start_size)]
-            Direct.LEFT: [(self._arena[0] // 2 + i, self._arena[1] // 2) for i in range(start_size)]
+            Direct.UP: [(self._arena[0] // 2, self._arena[1] // 2 + i) for i in range(start_size)],
+            Direct.RIGHT: [(self._arena[0] // 2 - i, self._arena[1] // 2) for i in range(start_size)],
+            Direct.DOWN: [(self._arena[0] // 2, self._arena[1] // 2 - i) for i in range(start_size)],
+            Direct.LEFT: [(self._arena[0] // 2 + i, self._arena[1] // 2) for i in range(start_size)],
         }
         self._body = init[self._direct]
 
@@ -44,7 +44,7 @@ class Snake():
         return element
 
     @property
-    def diraction(self):
+    def direction(self):
         return self._direct
 
     @direction.setter
@@ -76,7 +76,6 @@ class Snake():
         self._body.insert(0, (x, y))
         return True
 
-
     def check(self, block):
         return block in self._body
 
@@ -84,19 +83,24 @@ class Snake():
 class Arena(pg.Surface):
     def __init__(self, win_size, box_size, area):
         super().__init__(win_size)
+        self._win_size = win_size
         self._box = box_size
         self._area = area
         self._bg_color = Color.ORANGE
         self._food_color = Color.RED
         self._snake_color = Color.WHITE
         self._head_color = Color.BLUE
+        self._end_game = False
+        #self._food = None
+        self.snake = Snake(self._area)
         self.fill(self._bg_color)
         self.add_food()
         self.draw_snake()
         self.draw_food()
 
-    def draw_food(self):
-        ...
+    @property
+    def is_end(self):
+        return self._end_game
 
     def draw_snake(self):
         for block, color in zip(self.snake, [self._head_color] + [self._snake_color] * (len(self.snake) - 1)):
@@ -107,9 +111,35 @@ class Arena(pg.Surface):
             y_e = y_s + self._box -1
             pg.draw.rect(self, color, [x_s, y_s, x_e, y_e])
 
-    def update(self):
-        ...
+    def draw_food(self):
+        x, y = self._food
+        x_s = x * self._box + 1
+        y_s = y * self._box + 1
+        x_e = x_s + self._box - 1
+        y_e = y_s + self._box - 1
+        pg.draw.rect(self, self._food_color, [x_s, y_s, x_e, y_e])
 
     def add_food(self):
-        ...
+        self._food = (
+            randrange(0, self._win_size[0]),
+            randrange(0, self._win_size[1])
+        )
+        while self.snake.check(self._food):
+            self._food = (
+            randrange(0, self._win_size[0]),
+            randrange(0, self._win_size[1])
+        )
+
+    def update(self, direct):
+        if direct is not None:
+            self.snake.direction = direct
+        self.snake.direction = direct
+        if self.snake.step(self._food):
+            if self.snake.step(self._food):
+                self.add._food()
+            self.draw_food()
+            self.draw_snake()
+        else:
+            #end game
+            self._end_game = True
 
